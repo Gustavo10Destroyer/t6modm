@@ -402,6 +402,7 @@ def build_project(args: argparse.Namespace) -> None:
     if not quiet:
         print(f'[{YELLOW}INFO{RESET}] Compilando no modo {mode}...')
 
+    shutil.rmtree(os.path.join(project_home, 'compiled'))
     process = subprocess.Popen(command, shell=True)
     process.wait()
     if process.returncode != 0:
@@ -419,15 +420,13 @@ def build_project(args: argparse.Namespace) -> None:
                     os.unlink(temp_zone_path)
                     sys.exit(1)
 
-                if len(items) == 1:
+                if not file_dest.endswith('/') and not file_dest.endswith('\\'):
                     for item in items:
                         file.write(item, file_dest)
-                else:
-                    if not file_dest.endswith('/') and not file_dest.endswith('\\'):
-                        file_dest += '/'
+                    continue
 
-                    for item in items:
-                        file.write(item, os.path.join(file_dest, os.path.basename(item)))
+                for item in items:
+                    file.write(item, os.path.join(file_dest, os.path.basename(item)))
 
     with open(os.path.join(project_home, 'compiled', 'mod.json'), 'w') as file:
         project_desc: str = project.get('description', 'No description provided')
@@ -467,7 +466,8 @@ def build_project(args: argparse.Namespace) -> None:
             elif os.path.isdir(path):
                 shutil.rmtree(path)
 
-    shutil.move(os.path.join(project_home, 'compiled'), dest)
+    for item in os.listdir(os.path.join(project_home, 'compiled')):
+        shutil.copy(os.path.join(project_home, 'compiled', item), os.path.join(dest, item))
 
     if not quiet:
         print(f'[{GREEN}INFO{RESET}] O resultado foi movido para {YELLOW}"{dest}"{RESET}.')
