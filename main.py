@@ -291,6 +291,7 @@ def build_project(args: argparse.Namespace) -> None:
             build_args.y = None
             build_args.dest = None
             build_args.mode = mode
+            build_args.wait = False
             build_args.quiet = True
             build_args.home = dependency['origin']
 
@@ -411,7 +412,7 @@ def build_project(args: argparse.Namespace) -> None:
     if len(files) > 0:
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'mod.iwd'), 'w') as file:
             for file_source, file_dest in files:
-                items = glob.glob(file_source)
+                items = glob.glob(os.path.join(project_home, file_source))
 
                 if not items:
                     sys.stderr.write(f'[{RED}ERR!{RESET}] Ao gerar o IWD: nenhum arquivo encontrado para {YELLOW}{file_source}{RESET}\r\n')
