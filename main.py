@@ -506,6 +506,10 @@ def main() -> None:
     config_parser.add_argument('name', help='O nome da configuração.')
     config_parser.add_argument('value', nargs='?', help='O valor da configuração.')
 
+    # Sub-comando: setup
+    setup_parser = subparsers.add_parser('setup', help='Adiciona a ferramenta ao PATH.')
+    setup_parser.add_argument('--remove', action='store_true', default=False, help='Use esta flag para remover a ferramenta do PATH.')
+
     args = parser.parse_args()
 
     if args.action == 'create':
@@ -523,6 +527,27 @@ def main() -> None:
     if args.action == 'config':
         config(args)
         return
+    
+    if args.action == 'setup':
+        remove: bool = args.remove
+        file_path = os.path.expandvars(r'$localappdata\Microsoft\WindowsApps\t6modm.cmd')
+        if remove:
+            if not os.path.isfile(file_path):
+                sys.stderr.write(f'[{RED}ERR!{RESET}] A ferramenta não está instalada.\r\n')
+                sys.exit(1)
+
+            os.unlink(file_path)
+            print(f'[{GREEN}INFO{RESET}] A ferramenta foi removida do seu ambiente.')
+            return
+
+        if os.path.isfile(file_path):
+            print(f'[{GREEN}INFO{RESET}] A ferramenta já está no seu ambiente, use {YELLOW}t6modm --help{RESET} para obter ajuda.')
+            return
+
+        with open(file_path, 'w') as file:
+            file.write(f'@echo off\npython "{os.path.abspath(sys.argv[0])}" %*')
+
+        print(f'[{GREEN}INFO{RESET}] A ferramenta foi adicionada ao seu ambiente.')
 
 if __name__ == '__main__':
     main()
