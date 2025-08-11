@@ -1,0 +1,19 @@
+{
+    "oat": "{{VAR:$home}}\\oat\\latest",
+    "name": "Mod de exemplo (T6MODM)",
+    "author": "{{VAR:user.name}}",
+    "version": "1.0.0",
+    "game_dir": "{{VAR:GAME_DIR}}",
+    "repository": "",
+    "description": "Projeto gerado com o T6MODM. Gerado por {{VAR:user.name}}",
+    "dependencies": [
+        {
+            "type": "fastfile",
+            "origin": "{{VAR:GAME_DIR}}\\zone\\all\\common_zm.ff"
+        },
+        {
+            "type": "project",
+            "origin": "{{VAR:$home}}\\dependencies\\mod_test"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "oat": "{{VAR:$home}}\\oat\\latest",
+    "name": "mod_test",
+    "author": "",
+    "version": "1.0.0",
+    "game_dir": "{{VAR:GAME_DIR}}",
+    "repository": "",
+    "description": "Projeto criado com t6modm"
+}

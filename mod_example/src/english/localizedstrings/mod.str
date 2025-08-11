@@ -1,0 +1,8 @@
+VERSION             "1"
+CONFIG              ""
+FILENOTES           ""
+
+REFERENCE           MESSAGE_T6MODM
+LANG_ENGLISH        "Feito com T6MODM"
+
+ENDMARKER

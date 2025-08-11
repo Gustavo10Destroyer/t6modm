@@ -1,0 +1,16 @@
+>game,T6
+
+localize,mod
+
+// Carregar o shader
+material,my_shader
+
+// Colocar a imagem no IWD (obrigatório, se ela não existir no jogo)
+// Todas as imagens usadas pelo jogo estão no formato IWI! (O DDS é como o OAT extrai, mas ele não converte de volta para IWI automaticamente)
+file: src/images/*.iwi images/
+
+// Carregar o script test.gsc, que vem do outro mod(da dependência)
+script,scripts/zm/test.gsc
+
+// Carregar o script my_shader.gsc
+script,scripts/zm/my_shader.gsc
