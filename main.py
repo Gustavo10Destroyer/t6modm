@@ -329,12 +329,22 @@ def build_project(args: argparse.Namespace) -> None:
         nonlocal scripts
 
         for line in list(lines):
+            if line.strip().startswith('//'):
+                continue
+
             if line.strip().startswith('>name,') or line.strip().startswith('>game,'):
                 lines.remove(line)
 
-            if line.strip().startswith('script,') and line.strip().endswith('.gsc') and mode == 'release':
-                scripts.append(line.strip()[7:])
-                lines.remove(line)
+            if mode == 'release' and line.strip().startswith('script,'):
+                if line.strip().endswith('noignore'):
+                    if not quiet:
+                        print(f'[{RED}WARN{RESET}] Um script não está sendo ignorado no modo release. Isso pode ser perigoso!')
+                        print(f'  {line}')
+                    continue
+
+                if line.strip().endswith('.gsc'):
+                    scripts.append(line.strip()[7:])
+                    lines.remove(line)
 
             if line.strip().startswith('include,'):
                 _, zone_name = line.strip().split(',', 1)
@@ -418,7 +428,8 @@ def build_project(args: argparse.Namespace) -> None:
     if len(mod_files) > 0:
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'mod.iwd'), 'w') as file:
             for file_source, file_dest in mod_files:
-                items = glob.glob(os.path.join(project_home, file_source))
+                src = os.path.join(project_home, file_source)
+                items = glob.glob(src, recursive=True)
 
                 if not items:
                     sys.stderr.write(f'[{RED}ERR!{RESET}] Ao gerar o IWD: nenhum arquivo encontrado para {YELLOW}{file_source}{RESET}\r\n')
@@ -431,12 +442,15 @@ def build_project(args: argparse.Namespace) -> None:
                     continue
 
                 for item in items:
-                    file.write(item, os.path.join(file_dest, os.path.basename(item)))
+                    rel = os.path.relpath(item, os.path.commonpath([src.rstrip("*/"), item]))
+                    destino_item = os.path.join(file_dest, rel)
+                    file.write(item, destino_item)
 
     if len(server_files) > 0:
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'server-only.zip'), 'w') as file:
             for file_source, file_dest in server_files:
-                items = glob.glob(os.path.join(project_home, file_source))
+                src = os.path.join(project_home, file_source)
+                items = glob.glob(src, recursive=True)
 
                 if not items:
                     sys.stderr.write(f'[{RED}ERR!{RESET}] Ao gerar o IWD: nenhum arquivo encontrado para {YELLOW}{file_source}{RESET}\r\n')
@@ -449,7 +463,9 @@ def build_project(args: argparse.Namespace) -> None:
                     continue
 
                 for item in items:
-                    file.write(item, os.path.join(file_dest, os.path.basename(item)))
+                    rel = os.path.relpath(item, os.path.commonpath([src.rstrip("*/"), item]))
+                    destino_item = os.path.join(file_dest, rel)
+                    file.write(item, destino_item)
 
     with open(os.path.join(output_path, 'mod.json'), 'w') as file:
         project_desc: str = project.get('description', 'No description provided')
