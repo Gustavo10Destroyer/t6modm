@@ -26,9 +26,10 @@ def create_project(args: argparse.Namespace) -> None:
     directory: str | None = args.directory
     description: str = args.description
 
-    if not os.path.isdir(game_dir):
-        sys.stderr.write(f'[{RED}ERR!{RESET}] {YELLOW}"{game_dir}"{RESET} não é um caminho válido, certifique-se que o caminho existe e é um diretório!\r\n')
-        sys.exit(1)
+    variables = load_vars(os.path.expanduser(r'~/.t6modm.vars.json'))
+    game_dir = parse_variables(game_dir, variables)
+    if len(game_dir) > 0 and not os.path.isdir(game_dir):
+        print(f'[{YELLOW}WARN{RESET}] O diretório do jogo não foi encontrado!')
 
     if directory is None:
         directory = os.path.join(os.getcwd(), name)
@@ -150,6 +151,8 @@ def load_project(project_dir: str) -> Dict[str, Any]:
 
     with open(project, 'r') as file:
         data: Dict[str, Any] = json.load(file)
+        game_dir: str = data.get('game_dir', '')
+        variables['$game_dir'] = game_dir
         data = parse_variables(data, variables) # type: ignore
 
     return data
@@ -318,10 +321,11 @@ def build_project(args: argparse.Namespace) -> None:
         sys.stderr.write(f'[{RED}ERR!{RESET}] Ocorreu um erro ao tentar compilar o projeto. O arquivo {YELLOW}src/zone_source/mod.zone{RESET} não foi encontrado.\r\n')
         sys.exit(1)
 
-    files: List[Tuple[str, str]] = []
+    mod_files: List[Tuple[str, str]] = []    # Carregado no IWD
+    server_files: List[Tuple[str, str]] = [] # Um zip separado que NÃO deve ser enviado ao jogador
     scripts: List[str] = []
     def parse_lines(lines: List[str]) -> List[str]:
-        nonlocal files
+        nonlocal mod_files
         nonlocal scripts
 
         for line in list(lines):
@@ -345,6 +349,21 @@ def build_project(args: argparse.Namespace) -> None:
                     lines.append('\n')
                     lines += parse_lines(zone.readlines())
 
+            test = re.match(r'(serverfile|serverfile_debug|serverfile_release):\s*([\w\/\.\*]+)\s+([\w\/\.]+)', line)
+            if test is not None:
+                lines.remove(line)
+
+                file_mode: str = test[1]
+                file_source: str = test[2]
+                file_dest: str = test[3]
+                if file_mode == 'serverfile':
+                    server_files.append((file_source, file_dest))
+                elif file_mode == 'serverfile_debug' and mode == 'debug':
+                    server_files.append((file_source, file_dest))
+                elif file_mode == 'serverfile_release' and mode == 'release':
+                    server_files.append((file_source, file_dest))
+                continue
+
             test = re.match(r'(file|file_debug|file_release):\s*([\w\/\.\*]+)\s+([\w\/\.]+)', line)
             if test is None:
                 continue
@@ -355,29 +374,12 @@ def build_project(args: argparse.Namespace) -> None:
             file_source: str = test[2]
             file_dest: str = test[3]
 
-            # def test_file():
-            #     nonlocal file_source
-
-            #     found = False
-            #     for path in source_path:
-            #         if os.path.isfile(os.path.join(path, file_source)):
-            #             found = True
-            #             file_source = os.path.join(path, file_source)
-            #             break
-
-            #     if not found:
-            #         sys.stderr.write(f'[{RED}ERR!{RESET}] Ocorreu um erro ao tentar compilar o projeto. O arquivo {YELLOW}{file_source}{RESET} não foi encontrado.\r\n')
-            #         sys.exit(1)
-
             if file_mode == 'file':
-                # test_file()
-                files.append((file_source, file_dest))
+                mod_files.append((file_source, file_dest))
             elif file_mode == 'file_debug' and mode == 'debug':
-                # test_file()
-                files.append((file_source, file_dest))
+                mod_files.append((file_source, file_dest))
             elif file_mode == 'file_release' and mode == 'release':
-                # test_file()
-                files.append((file_source, file_dest))
+                mod_files.append((file_source, file_dest))
 
         return lines
 
@@ -402,7 +404,10 @@ def build_project(args: argparse.Namespace) -> None:
     if not quiet:
         print(f'[{YELLOW}INFO{RESET}] Compilando no modo {mode}...')
 
-    shutil.rmtree(os.path.join(project_home, 'compiled'))
+    output_path = os.path.join(os.path.join(project_home, 'compiled'))
+    if os.path.exists(output_path):
+        shutil.rmtree(output_path)
+
     process = subprocess.Popen(command, shell=True)
     process.wait()
     if process.returncode != 0:
@@ -410,9 +415,9 @@ def build_project(args: argparse.Namespace) -> None:
         os.unlink(temp_zone_path)
         sys.exit(1)
 
-    if len(files) > 0:
+    if len(mod_files) > 0:
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'mod.iwd'), 'w') as file:
-            for file_source, file_dest in files:
+            for file_source, file_dest in mod_files:
                 items = glob.glob(os.path.join(project_home, file_source))
 
                 if not items:
@@ -428,7 +433,25 @@ def build_project(args: argparse.Namespace) -> None:
                 for item in items:
                     file.write(item, os.path.join(file_dest, os.path.basename(item)))
 
-    with open(os.path.join(project_home, 'compiled', 'mod.json'), 'w') as file:
+    if len(server_files) > 0:
+        with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'server-only.zip'), 'w') as file:
+            for file_source, file_dest in server_files:
+                items = glob.glob(os.path.join(project_home, file_source))
+
+                if not items:
+                    sys.stderr.write(f'[{RED}ERR!{RESET}] Ao gerar o IWD: nenhum arquivo encontrado para {YELLOW}{file_source}{RESET}\r\n')
+                    os.unlink(temp_zone_path)
+                    sys.exit(1)
+
+                if not file_dest.endswith('/') and not file_dest.endswith('\\'):
+                    for item in items:
+                        file.write(item, file_dest)
+                    continue
+
+                for item in items:
+                    file.write(item, os.path.join(file_dest, os.path.basename(item)))
+
+    with open(os.path.join(output_path, 'mod.json'), 'w') as file:
         project_desc: str = project.get('description', 'No description provided')
         project_author: str = project.get('author', 'Unknown')
         project_version: str = project.get('version', 'Unknown')
@@ -444,7 +467,8 @@ def build_project(args: argparse.Namespace) -> None:
     if not quiet:
         print(f'[{GREEN}INFO{RESET}] Compilado com sucesso.')
         print(f'[{CYAN}INFO{RESET}] Lista de scripts ignorados do fastfile: {scripts}')
-        print(f'[{CYAN}INFO{RESET}] Lista de arquivos incluídos no IWD: {list(map(lambda files: os.path.relpath(files[0]), files))}')
+        print(f'[{CYAN}INFO{RESET}] Lista de arquivos incluídos no IWD: {list(map(lambda files: os.path.relpath(files[0]), mod_files))}')
+        print(f'[{CYAN}INFO{RESET}] Lista de arquivos server-side only: {list(map(lambda files: os.path.relpath(files[0]), server_files))}')
 
     dest: str | None = args.dest
     if dest is None:
@@ -466,8 +490,10 @@ def build_project(args: argparse.Namespace) -> None:
             elif os.path.isdir(path):
                 shutil.rmtree(path)
 
-    for item in os.listdir(os.path.join(project_home, 'compiled')):
-        shutil.copy(os.path.join(project_home, 'compiled', item), os.path.join(dest, item))
+    os.makedirs(dest, exist_ok=True)
+
+    for item in os.listdir(output_path):
+        shutil.copy(os.path.join(output_path, item), os.path.join(dest, item))
 
     if not quiet:
         print(f'[{GREEN}INFO{RESET}] O resultado foi movido para {YELLOW}"{dest}"{RESET}.')
@@ -479,7 +505,7 @@ def main() -> None:
     # Sub-comando: create
     create_parser = subparsers.add_parser('create', help='Cria um novo projeto')
     create_parser.add_argument('name', help='Nome do projeto')
-    create_parser.add_argument('game_dir', help='Caminho para o diretório do jogo')
+    create_parser.add_argument('game_dir', nargs='?', default='{{VAR:GAME_DIR}}', help='Caminho para o diretório do jogo')
     create_parser.add_argument('--oat', help='Versão do OAT que será usada (padrão: latest)', default='latest')
     create_parser.add_argument('--directory', help='Diretório onde o projeto será criado', default=None)
     create_parser.add_argument('--description', help='Descrição do projeto', default='Projeto criado com t6modm')
@@ -528,7 +554,7 @@ def main() -> None:
     if args.action == 'config':
         config(args)
         return
-    
+
     if args.action == 'setup':
         remove: bool = args.remove
         file_path = os.path.expandvars(r'$localappdata\Microsoft\WindowsApps\t6modm.cmd')
@@ -546,7 +572,7 @@ def main() -> None:
             return
 
         with open(file_path, 'w') as file:
-            file.write(f'@echo off\npython "{os.path.abspath(sys.argv[0])}" %*')
+            file.write(f'@echo off\n"{sys.executable}" "{os.path.abspath(sys.argv[0])}" %*')
 
         print(f'[{GREEN}INFO{RESET}] A ferramenta foi adicionada ao seu ambiente.')
 
