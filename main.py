@@ -224,9 +224,12 @@ def config(args: argparse.Namespace) -> None:
             print(f'[{GREEN}INFO{RESET}] [{noun}] A variável {YELLOW}{name}{RESET} foi apagada.')
             return
 
-    with open(file_path, 'r') as file:
-        variables = json.load(file)
-        variables[name] = value
+    variables = {}
+
+    if os.path.isfile(file_path):
+        with open(file_path, 'r') as file:
+            variables = json.load(file)
+            variables[name] = value
 
     with open(file_path, 'w') as file:
         json.dump(variables, file, indent=4, ensure_ascii=False)
