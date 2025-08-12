@@ -151,6 +151,7 @@ def load_project(project_dir: str) -> Dict[str, Any]:
 
     with open(project, 'r') as file:
         data: Dict[str, Any] = json.load(file)
+        data['game_dir'] = parse_variables(data.get('game_dir', ''), variables)
         game_dir: str = data.get('game_dir', '')
         variables['$game_dir'] = game_dir
         data = parse_variables(data, variables) # type: ignore
