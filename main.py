@@ -225,6 +225,7 @@ def config(args: argparse.Namespace) -> None:
             return
 
     variables = {}
+    variables[name] = value
 
     if os.path.isfile(file_path):
         with open(file_path, 'r') as file:
