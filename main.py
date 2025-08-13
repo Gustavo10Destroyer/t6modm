@@ -553,15 +553,18 @@ def build_project(args: argparse.Namespace) -> None:
 
 def update_tool(args: argparse.Namespace):
     git = subprocess.Popen(['git', 'pull'], cwd=os.path.dirname(sys.argv[0]), shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    git.wait()
+    stdout, stderr = git.communicate()
 
-    if git.stdout is not None:
-        output = git.stdout.read()
-        print(output)
+    if stdout.startswith('Already up to date.'):
+        print(f'[{GREEN}INFO{RESET}] A ferramenta já está atualizada.')
+        return
 
     if git.returncode == 0:
-        print(f'[{GREEN}INFO{RESET}] Sua ferramenta já está atualizada.')
-    print(f'Código de saída: {git.returncode}')
+        print(f'[{GREEN}INFO{RESET}] A ferramenta foi atualizada!')
+        return
+
+    sys.stderr.write(f'[{RED}ERR!{RESET}] Ocorreu um erro ao tentar atualizar a ferramenta: {stderr}')
+    sys.exit(git.returncode)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Uma ferramenta para criar e gerenciar projetos de modding para Call of Duty: Black Ops 2')
