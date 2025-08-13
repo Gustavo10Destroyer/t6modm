@@ -1,3 +1,5 @@
+__version__ = '0.0.12a'
+
 import os
 import re
 import sys
@@ -568,6 +570,7 @@ def update_tool(args: argparse.Namespace):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Uma ferramenta para criar e gerenciar projetos de modding para Call of Duty: Black Ops 2')
+    parser.add_argument('--version', action='version', version=f'T6MODM v{__version__}')
     subparsers = parser.add_subparsers(dest='action', required=True)
 
     # Sub-comando: create
