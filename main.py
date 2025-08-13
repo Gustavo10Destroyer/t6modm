@@ -637,7 +637,7 @@ def main() -> None:
             return
 
         with open(file_path, 'wb') as file:
-            file.write(f'@echo off\n"{sys.executable}" "{os.path.normpath(os.path.abspath(sys.argv[0]))}" %*'.encode('utf-8'))
+            file.write(f'@echo off\nchcp 65001 >nul\n"{sys.executable}" "{os.path.normpath(os.path.abspath(sys.argv[0]))}" %*'.encode('utf-8'))
 
         print(f'[{GREEN}INFO{RESET}] A ferramenta foi adicionada ao seu ambiente.')
 
