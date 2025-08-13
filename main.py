@@ -329,26 +329,30 @@ def build_project(args: argparse.Namespace) -> None:
     mod_files: List[Tuple[str, str]] = []    # Carregado no IWD
     server_files: List[Tuple[str, str]] = [] # Um zip separado que NÃO deve ser enviado ao jogador
     scripts: List[str] = []
-    def parse_lines(lines: List[str]) -> List[str]:
-        nonlocal mod_files
+    def parse_lines(lines: List[str], filename: str) -> List[str]:
         nonlocal scripts
+        nonlocal mod_files
 
-        for line in list(lines):
+        for index, line in enumerate(list(lines)):
             if line.strip().startswith('//'):
                 continue
 
             if line.strip().startswith('>name,') or line.strip().startswith('>game,'):
                 lines.remove(line)
 
-            if mode == 'release' and line.strip().startswith('script,'):
+            test = re.match(r'script,\s*([^ ]+?)(?=\s*\/\/|$)', line)
+            if test is not None and mode == 'release':
+                script: str = os.path.normpath(test[1])
                 if line.strip().endswith('noignore'):
                     if not quiet:
                         print(f'[{RED}WARN{RESET}] Um script não está sendo ignorado no modo release. Isso pode ser perigoso!')
-                        print(f'  {line}')
+                        print(f'  Script: {YELLOW}{script}{RESET}')
+                        print(f'  Linha completa: {line.strip()}')
+                        print(f'  Nome do arquivo: {filename} -> Linha {index+1}')
                     continue
 
-                if line.strip().endswith('.gsc'):
-                    scripts.append(line.strip()[7:])
+                if line.strip().endswith('.gsc') and script not in scripts:
+                    scripts.append(script)
                     lines.remove(line)
 
             if line.strip().startswith('include,'):
@@ -362,7 +366,7 @@ def build_project(args: argparse.Namespace) -> None:
                 lines.remove(line)
                 with open(zone_path, 'r') as zone:
                     lines.append('\n')
-                    lines += parse_lines(zone.readlines())
+                    lines += parse_lines(zone.readlines(), os.path.basename(zone_path))
 
             test = re.match(r'(serverfile|serverfile_debug|serverfile_release):\s*([\w\/\.\*]+)\s+([\w\/\.]+)', line)
             if test is not None:
@@ -399,7 +403,7 @@ def build_project(args: argparse.Namespace) -> None:
         return lines
 
     file = open(zone_path, 'r')
-    lines = parse_lines(file.readlines())
+    lines = parse_lines(file.readlines(), os.path.basename(zone_path))
     file.close()
 
     temp_zone_name = f'{mode}_{str(uuid.uuid4())}'
@@ -451,8 +455,9 @@ def build_project(args: argparse.Namespace) -> None:
                     destino_item = os.path.join(file_dest, rel)
                     file.write(item, destino_item)
 
-    if len(server_files) > 0:
+    if len(server_files) > 0 or len(scripts) > 0:
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'server-only.zip'), 'w') as file:
+            # Processar server files
             for file_source, file_dest in server_files:
                 src = os.path.join(project_home, file_source)
                 items = glob.glob(src, recursive=True)
@@ -472,6 +477,18 @@ def build_project(args: argparse.Namespace) -> None:
                     destino_item = os.path.join(file_dest, rel)
                     file.write(item, destino_item)
 
+            # Processar scripts
+            for script in scripts:
+                print(script)
+                for path in source_path:
+                    script_path = os.path.join(path, 'src', script)
+                    print(f'{YELLOW}{script_path}{RESET}')
+                    if os.path.isfile(script_path):
+                        if path != project_home and not quiet:
+                            print(f'[INFO] O script {script} foi encontrado em {path}')
+                        file.write(script_path, script)
+                        break
+
     with open(os.path.join(output_path, 'mod.json'), 'w') as file:
         project_desc: str = project.get('description', 'No description provided')
         project_author: str = project.get('author', 'Unknown')
@@ -490,6 +507,7 @@ def build_project(args: argparse.Namespace) -> None:
         print(f'[{CYAN}INFO{RESET}] Lista de scripts ignorados do fastfile: {scripts}')
         print(f'[{CYAN}INFO{RESET}] Lista de arquivos incluídos no IWD: {list(map(lambda files: os.path.relpath(files[0]), mod_files))}')
         print(f'[{CYAN}INFO{RESET}] Lista de arquivos server-side only: {list(map(lambda files: os.path.relpath(files[0]), server_files))}')
+        print(scripts)
 
     dest: str | None = args.dest
     if dest is None:
