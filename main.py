@@ -552,8 +552,19 @@ def build_project(args: argparse.Namespace) -> None:
         print(f'[{GREEN}INFO{RESET}] O resultado foi movido para {YELLOW}"{dest}"{RESET}.')
 
 def update_tool(args: argparse.Namespace):
-    git = subprocess.Popen(['git', 'pull'], cwd=os.path.dirname(sys.argv[0]), shell=True)
+    git = subprocess.Popen(['git', 'pull'], cwd=os.path.dirname(sys.argv[0]), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     git.wait()
+
+    if git.stderr is None:
+        print('stderr is none')
+        return
+
+    if git.stdout is None:
+        print('stdout is none')
+        return
+
+    if git.returncode == 0:
+        print(f'[{GREEN}INFO{RESET}] Sua ferramenta já está atualizada.')
     print(f'Código de saída: {git.returncode}')
 
 def main() -> None:
