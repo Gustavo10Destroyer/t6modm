@@ -636,8 +636,8 @@ def main() -> None:
             print(f'[{GREEN}INFO{RESET}] A ferramenta já está no seu ambiente, use {YELLOW}t6modm --help{RESET} para obter ajuda.')
             return
 
-        with open(file_path, 'w') as file:
-            file.write(f'@echo off\n"{sys.executable}" "{os.path.abspath(sys.argv[0])}" %*')
+        with open(file_path, 'wb') as file:
+            file.write(f'@echo off\n"{sys.executable}" "{os.path.normpath(os.path.abspath(sys.argv[0]))}" %*'.encode('utf-8'))
 
         print(f'[{GREEN}INFO{RESET}] A ferramenta foi adicionada ao seu ambiente.')
 
