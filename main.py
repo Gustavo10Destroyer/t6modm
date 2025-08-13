@@ -340,20 +340,28 @@ def build_project(args: argparse.Namespace) -> None:
             if line.strip().startswith('>name,') or line.strip().startswith('>game,'):
                 lines.remove(line)
 
-            test = re.match(r'script,\s*([^ ]+?)(?=\s*\/\/|$)', line)
-            if test is not None and mode == 'release':
-                script: str = os.path.normpath(test[1])
-                if line.strip().endswith('noignore'):
-                    if not quiet:
-                        print(f'[{RED}WARN{RESET}] Um script não está sendo ignorado no modo release. Isso pode ser perigoso!')
-                        print(f'  Script: {YELLOW}{script}{RESET}')
-                        print(f'  Linha completa: {line.strip()}')
-                        print(f'  Nome do arquivo: {filename} -> Linha {index+1}')
-                    continue
+            test = re.findall(r'script,\s*([^ ]+?)(?=\s*\/\/|$)', line)
+            if len(test) > 0 and mode == 'release':
+                for item in test:
+                    print(item)
+                    item_test = re.match(r'([^ ]+?)(?=\s*\/\/|$)', item)
+                    if item_test is None:
+                        print(f'Um RegEx defeituoso foi encontrado! {item}')
+                        sys.exit(1)
+                        break
 
-                if line.strip().endswith('.gsc') and script not in scripts:
-                    scripts.append(script)
-                    lines.remove(line)
+                    script: str = os.path.normpath(item_test[1])
+                    if line.strip().endswith('noignore'):
+                        if not quiet:
+                            print(f'[{RED}WARN{RESET}] Um script não está sendo ignorado no modo release. Isso pode ser perigoso!')
+                            print(f'  Script: {YELLOW}{script}{RESET}')
+                            print(f'  Linha completa: {line.strip()}')
+                            print(f'  Nome do arquivo: {filename} -> Linha {index+1}')
+                        continue
+
+                    if line.strip().endswith('.gsc') and script not in scripts:
+                        scripts.append(script)
+                        lines.remove(line)
 
             if line.strip().startswith('include,'):
                 _, zone_name = line.strip().split(',', 1)
@@ -543,6 +551,11 @@ def build_project(args: argparse.Namespace) -> None:
     if not quiet:
         print(f'[{GREEN}INFO{RESET}] O resultado foi movido para {YELLOW}"{dest}"{RESET}.')
 
+def update_tool(args: argparse.Namespace):
+    git = subprocess.Popen(['git', 'pull'], cwd=os.path.dirname(sys.argv[0]), shell=True)
+    git.wait()
+    print(f'Código de saída: {git.returncode}')
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Uma ferramenta para criar e gerenciar projetos de modding para Call of Duty: Black Ops 2')
     subparsers = parser.add_subparsers(dest='action', required=True)
@@ -578,6 +591,9 @@ def main() -> None:
     config_parser.add_argument('name', help='O nome da configuração.')
     config_parser.add_argument('value', nargs='?', help='O valor da configuração.')
 
+    # Sub-comando: update
+    subparsers.add_parser('update', help='Atualiza a ferramenta.')
+
     # Sub-comando: setup
     setup_parser = subparsers.add_parser('setup', help='Adiciona a ferramenta ao PATH.')
     setup_parser.add_argument('--remove', action='store_true', default=False, help='Use esta flag para remover a ferramenta do PATH.')
@@ -598,6 +614,10 @@ def main() -> None:
 
     if args.action == 'config':
         config(args)
+        return
+
+    if args.action == 'update':
+        update_tool(args)
         return
 
     if args.action == 'setup':
