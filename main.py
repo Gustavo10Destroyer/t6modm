@@ -456,6 +456,7 @@ def build_project(args: argparse.Namespace) -> None:
                     file.write(item, destino_item)
 
     if len(server_files) > 0 or len(scripts) > 0:
+        included: List[str] = []
         with zipfile.ZipFile(os.path.join(project_home, 'compiled', 'server-only.zip'), 'w') as file:
             # Processar server files
             for file_source, file_dest in server_files:
@@ -470,16 +471,21 @@ def build_project(args: argparse.Namespace) -> None:
                 if not file_dest.endswith('/') and not file_dest.endswith('\\'):
                     for item in items:
                         file.write(item, file_dest)
+                        included.append(os.path.normpath(file_dest))
                     continue
 
                 for item in items:
                     rel = os.path.relpath(item, os.path.commonpath([src.rstrip("*/"), item]))
                     destino_item = os.path.join(file_dest, rel)
                     file.write(item, destino_item)
+                    included.append(os.path.normpath(destino_item))
 
             # Processar scripts
             for script in scripts:
-                print(script)
+                if script in included and not quiet:
+                    print(f'[{YELLOW}WARN{RESET}] O script {YELLOW}{script}{RESET} já foi incluído em outro lugar, mas é desnecessário. Ele será automaticamente incluído.')
+                    continue
+
                 for path in source_path:
                     script_path = os.path.join(path, 'src', script)
                     print(f'{YELLOW}{script_path}{RESET}')
