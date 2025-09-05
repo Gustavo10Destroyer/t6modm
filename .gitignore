@@ -1,0 +1,4 @@
+.vscode/
+locales/**/*.mo
+*/**/tempzones/
+src/example project/compiled/

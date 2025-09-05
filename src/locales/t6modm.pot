@@ -1,0 +1,156 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-04 20:07-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src\argument_parser.py:7
+msgid ""
+"A tool for creating and managing modding projects for Call of Duty: Black "
+"Ops 2"
+msgstr ""
+
+#: src\argument_parser.py:11
+msgid "Build the project"
+msgstr ""
+
+#: src\argument_parser.py:12
+msgid "Wait for manual review of the generated zonefile"
+msgstr ""
+
+#: src\argument_parser.py:13
+msgid "Build target"
+msgstr ""
+
+#: src\argument_parser.py:14
+msgid "The directory where the project is located"
+msgstr ""
+
+#: src\argument_parser.py:15
+msgid "The output directory"
+msgstr ""
+
+#: src\argument_parser.py:17
+msgid "Setup the tool into your environment"
+msgstr ""
+
+#: src\argument_parser.py:18
+msgid "Remove the tool from your environment"
+msgstr ""
+
+#: src\argument_parser.py:20
+msgid "Update the tool"
+msgstr ""
+
+#: src\main.py:29 src\main.py:34
+#, python-format
+msgid ""
+"The environment variable %s is not defined. You can define on a .t6modm.env "
+"file!"
+msgstr ""
+
+#: src\main.py:40
+#, python-format
+msgid "The file %s does not exist."
+msgstr ""
+
+#: src\main.py:92
+msgid "Failed to locate VSCode and Notepad on your system."
+msgstr ""
+
+#: src\main.py:100
+msgid "No scripts filtered."
+msgstr ""
+
+#: src\main.py:103
+#, python-format
+msgid "%(amount)s %(noun)s filtered."
+msgstr ""
+
+#: src\main.py:132
+#, python-format
+msgid "Building the project for target %s..."
+msgstr ""
+
+#: src\main.py:145
+msgid "Build failed!"
+msgstr ""
+
+#: src\main.py:149
+msgid "Build completed successfully!"
+msgstr ""
+
+#: src\main.py:158 src\main.py:170
+#, python-format
+msgid "Created %s"
+msgstr ""
+
+#: src\main.py:192
+msgid "That is not a project!"
+msgstr ""
+
+#: src\setup.py:9
+#, python-format
+msgid "The tool is already in your environment, use %s for help."
+msgstr ""
+
+#: src\setup.py:16
+msgid "The tool has been added to your environment."
+msgstr ""
+
+#: src\setup.py:22
+msgid "The tool is not installed."
+msgstr ""
+
+#: src\setup.py:27
+msgid "The tool has been removed from your environment."
+msgstr ""
+
+#: src\update.py:12
+msgid "The tool is already up to date."
+msgstr ""
+
+#: src\update.py:17
+msgid "The tool has been updated."
+msgstr ""
+
+#: src\update.py:21
+msgid "An error occurred while trying to update the tool"
+msgstr ""
+
+#: src\zone_parser.py:38
+#, python-format
+msgid "%s isn't a valid file!"
+msgstr ""
+
+#: src\tests\filter_gsc.py:37
+#, python-format
+msgid ""
+"The script %(prefix)s%(content)s%(suffix)s cannot be ignored, as it is "
+"imported from another fastfile. This may cause problems!"
+msgstr ""
+
+#: src\tests\filter_gsc.py:49
+#, python-format
+msgid ""
+"The %(prefix)s%(content)s%(suffix)s script isn't being ignored. This may "
+"cause problems!"
+msgstr ""
+
+#: src\tests\include_zone.py:37
+#, python-format
+msgid "The file %(prefix)s\"%(content)s\"%(sufix)s doesn't exist!"
+msgstr ""

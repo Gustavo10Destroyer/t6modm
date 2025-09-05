@@ -1,0 +1,9 @@
+{
+    "name": "Projeto de teste",
+    "author": "T6MODM",
+    "version": "1.0.0b",
+    "description": "Projeto de teste",
+    "dependencies": [
+        "$HOME\\dependencies\\adn-scripts"
+    ]
+}
