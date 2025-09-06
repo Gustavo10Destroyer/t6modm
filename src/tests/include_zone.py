@@ -17,8 +17,17 @@ def include_zone(self: ZoneParser, line: str) -> bool:
     if test is None:
         return False
 
-    zone_path: str = os.path.join(self.project.home, 'src', 'zone_source', test[1])
-    if not os.path.isfile(f'{zone_path}.zone'):
+    search_path = None
+    zone_path: str = ''
+    for search_path in self.project.asset_search_path:
+        zone_path: str = os.path.join(search_path, 'zone_source', test[1])
+        if not os.path.isfile(f'{zone_path}.zone'):
+            search_path = None
+            continue
+
+        break
+
+    if search_path is None:
         raise ZoneNotFoundException(self.source_path, f'{zone_path}.zone')
 
     zone_parser = ZoneParser(f'{zone_path}.zone')

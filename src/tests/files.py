@@ -23,18 +23,50 @@ def _process(self: ZoneParser, test: re.Match[str]):
             dest_path = os.path.normpath(os.path.join(file_dest, relative_path))
 
             if file_type == 'file':
+                file = self.project.get_file(dest_path)
+                if file is not None:
+                    from_source_mod = file.source.startswith(os.path.join(self.project.home, 'src'))
+                    if from_source_mod:
+                        continue
+
+                    self.project.files.remove(file)
+
                 self.project.files.append(File(path, dest_path))
                 continue
 
             if file_type.startswith('file') and file_type.endswith(self.project.target):
+                file = self.project.get_file(dest_path)
+                if file is not None:
+                    from_source_mod = file.source.startswith(os.path.join(self.project.home, 'src'))
+                    if from_source_mod:
+                        continue
+
+                    self.project.files.remove(file)
+
                 self.project.files.append(File(path, dest_path))
                 continue
 
             if file_type == 'serverfile':
+                file = self.project.get_serverfile(dest_path)
+                if file is not None:
+                    from_source_mod = file.source.startswith(os.path.join(self.project.home, 'src'))
+                    if from_source_mod:
+                        continue
+
+                    self.project.serverfiles.remove(file)
+
                 self.project.serverfiles.append(File(path, dest_path))
                 continue
 
             if file_type.startswith('serverfile') and file_type.endswith(self.project.target):
+                file = self.project.get_serverfile(dest_path)
+                if file is not None:
+                    from_source_mod = file.source.startswith(os.path.join(self.project.home, 'src'))
+                    if from_source_mod:
+                        continue
+
+                    self.project.serverfiles.remove(file)
+
                 self.project.serverfiles.append(File(path, dest_path))
 
 def files(self: ZoneParser, line: str) -> bool:

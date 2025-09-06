@@ -64,3 +64,13 @@ class Project:
         fastfiles: List[str] = data.get('fastfiles', [])
         dependencies: List[str] = data.get('dependencies', [])
         return cls(os.path.dirname(file_path), name, description, version, author, fastfiles, dependencies)
+
+    def get_file(self, dest_path: str) -> File | None:
+        for file in self.files:
+            if file.dest == dest_path:
+                return file
+
+    def get_serverfile(self, dest_path: str) -> File | None:
+        for file in self.serverfiles:
+            if file.dest == dest_path:
+                return file
