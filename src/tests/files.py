@@ -5,8 +5,8 @@ from file import File
 from zone_parser import ZoneParser
 
 class Patterns:
-    FILE_STATEMENT = re.compile(r'(file|file_debug|file_release):\s*([\w\/\.\*]+)\s+([\w\/\.]+)', re.MULTILINE)
-    SERVERFILE_STATEMENT = re.compile(r'(serverfile|serverfile_debug|serverfile_release):\s*([\w\/\.\*]+)\s+([\w\/\.]+)', re.MULTILINE)
+    FILE_STATEMENT = re.compile(r'(file|file_debug|file_release):\s*([\~\-\&\w\/\.\*]+)\s+([\~\-\&\w\/\.\*]+)', re.MULTILINE)
+    SERVERFILE_STATEMENT = re.compile(r'(serverfile|serverfile_debug|serverfile_release):\s*([\~\-\&\w\/\.\*]+)\s+([\~\-\&\w\/\.\*]+)', re.MULTILINE)
 
 def _process(self: ZoneParser, test: re.Match[str]):
     if self.project is None: # Apenas para fazer a tipagem parar de reclamar.
