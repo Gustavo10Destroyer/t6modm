@@ -27,7 +27,7 @@ from tests.ignore_comments import ignore_comments
 def build_project(project: Project):
     if os.environ.get('OAT_HOME') is None:
         message = _('The environment variable %s is not defined. You can define on a .t6modm.env file!')
-        print(f'[{Colors.RED}ERR!{Colors.RESET}] {message % 'OAT_GAME'}')
+        print(f'[{Colors.RED}ERR!{Colors.RESET}] {message % 'OAT_HOME'}')
         sys.exit(1)
 
     if os.environ.get('GAME_HOME') is None:
