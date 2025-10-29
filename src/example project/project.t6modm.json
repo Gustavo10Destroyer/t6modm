@@ -5,5 +5,8 @@
     "description": "Projeto de teste",
     "dependencies": [
         "$HOME\\dependencies\\adn-scripts"
+    ],
+    "fastfiles": [
+        "$GAME_HOME\\zone\\all\\patch_zm.ff"
     ]
 }
