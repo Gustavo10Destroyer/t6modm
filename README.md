@@ -23,7 +23,7 @@ python make.py
 
 3. Add to environment
 ```ps1
-python src/main.py
+python src/main.py setup
 ```
 
 # How to remove from environment?
