@@ -107,8 +107,10 @@ def build_project(project: Project):
     # ! IMPORTANTE: O diretório de saída deve existir antes de chamar o Linker (ele cria automaticamente se não existir, mas existe um bug com soundbanks caso não exista, a compilação funciona, mas o OAT diz que falhou)
     os.makedirs(output_folder, exist_ok=True)
 
+    oat_binary = 'Linker.exe' if os.name == 'nt' else 'Linker'
+
     command = [
-        os.path.join(os.environ.get('OAT_HOME', ''), 'Linker.exe'),
+        os.path.join(os.environ.get('OAT_HOME', ''), oat_binary),
         '-v',
         '--output-folder', output_folder,
         '--base-folder', os.environ.get('OAT_HOME', ''),
