@@ -135,9 +135,9 @@ def build_project(project: Project):
     print(f'[{Colors.GREEN}INFO{Colors.RESET}] {message % project.target}')
 
     # For debug purposes only
-    # print(f'OAT_HOME={os.environ.get("OAT_HOME", "")}')
-    # print(f'GAME_HOME={os.environ.get("GAME_HOME", "")}')
-    # print('\n'.join(command))
+    print(f'OAT_HOME={os.environ.get("OAT_HOME", "")}')
+    print(f'GAME_HOME={os.environ.get("GAME_HOME", "")}')
+    print('\n'.join(command))
     # return
 
     oat = subprocess.Popen(command, shell=True, text=True)
